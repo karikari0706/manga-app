@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おすすめ漫画アプリ</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #0096cc; }
+        .genre-container { margin-bottom: 20px; }
+        .genre-btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 20px; background-color: #ddd; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        /* 押されたボタン（active）の色をオレンジ色にする */
+        .genre-btn.active { background-color: #ff7f50; color: white; }
+        
+        .manga-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .manga-card { background: white; padding: 15px; border-radius: 10px; width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; }
+        .manga-card img { width: 100%; height: auto; border-radius: 5px; }
+        .manga-card h3 { margin: 10px 0 5px 0; font-size: 16px; }
+        .manga-card p { font-size: 12px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>📚 おすすめ漫画アプリ</h1>
+
+    <div class="genre-container" id="genre-buttons"></div>
+
+    <div class="manga-list" id="manga-list"></div>
+
+    <script>
+        // 選ばれているジャンルIDを記憶しておく配列
+        let selectedGenres = [];
+
+        window.onload = async function() {
+            // 1. ジャンル一覧を取得してボタンを作る
+            const genreRes = await fetch('/genres');
+            const genreData = await genreRes.json();
+            displayGenres(genreData.genres);
+
+            // 2. 最初は全部の漫画を表示する
+            fetchMangas();
+        };
+
+        // ボタンがクリックされた時の処理
+        function toggleGenre(id, btnElement) {
+            // 既に選ばれていたら配列から外し、色を元に戻す
+            if (selectedGenres.includes(id)) {
+                selectedGenres = selectedGenres.filter(g => g !== id);
+                btnElement.classList.remove('active');
+            } 
+            // 選ばれていなかったら配列に追加し、色を塗る
+            else {
+                selectedGenres.push(id);
+                btnElement.classList.add('active');
+            }
+            // 漫画を再検索する
+            fetchMangas();
+        }
+
+        // 漫画を裏側（API）から取ってくる処理
+        async function fetchMangas() {
+            let url = '/mangas';
+            // もし1つでもジャンルが選ばれていたら、URLの末尾に情報をくっつける（例: /mangas?genre_ids=1,2）
+            if (selectedGenres.length > 0) {
+                url += `?genre_ids=${selectedGenres.join(',')}`;
+            }
+            const response = await fetch(url);
+            const data = await response.json();
+            displayMangas(data.mangas);
+        }
+
+        function displayGenres(genres) {
+            const container = document.getElementById('genre-buttons');
+            container.innerHTML = '';
+            genres.forEach(genre => {
+                // ボタンが押されたら toggleGenre 関数を動かす
+                const btn = `<button class="genre-btn" onclick="toggleGenre(${genre.id}, this)">${genre.name}</button>`;
+                container.innerHTML += btn;
+            });
+        }
+
+        function displayMangas(mangas) {
+            const listDiv = document.getElementById('manga-list');
+            listDiv.innerHTML = '';
+            
+            // 該当する漫画がない場合のメッセージ
+            if (mangas.length === 0) {
+                listDiv.innerHTML = '<p>該当する漫画が見つかりません😢</p>';
+                return;
+            }
+
+            mangas.forEach(manga => {
+                const card = `
+                    <div class="manga-card">
+                        <img src="${manga.image_url}" alt="表紙">
+                        <h3>${manga.title}</h3>
+                        <p>作者: ${manga.author}</p>
+                        <p>${manga.description}</p>
+                    </div>
+                `;
+                listDiv.innerHTML += card;
+            });
+        }
+    </script>
+</body>
+
+<h1>📚 おすすめ漫画アプリ</h1>
+
+<div style="margin-bottom: 20px;">
+    <input type="text" id="search-input" placeholder="漫画のタイトルで検索..." style="padding: 10px; width: 250px; border-radius: 5px; border: 1px solid #ccc;">
+    <button onclick="fetchMangas()" style="padding: 10px 15px; border: none; background-color: #0096cc; color: white; border-radius: 5px; cursor: pointer; font-weight: bold;">検索</button>
+</div>
+
+    ```
+
+**② 下の方にある `<script>` 内の `fetchMangas` 関数を書き換え**
+```javascript
+        // 漫画を裏側（API）から取ってくる処理
+        async function fetchMangas() {
+            let url = '/mangas?';
+            
+            // ジャンルが選ばれている場合
+            if (selectedGenres.length > 0) {
+                url += `genre_ids=${selectedGenres.join(',')}&`;
+            }
+            
+            // 🆕追加：検索ボックスに文字が入っている場合
+            const keyword = document.getElementById('search-input').value;
+            if (keyword) {
+                url += `keyword=${encodeURIComponent(keyword)}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+            displayMangas(data.mangas);
+        }
+
+        
+</html>
