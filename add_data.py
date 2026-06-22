@@ -19,7 +19,7 @@ try:
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
 
         # 2. ジャンル（タグ）の登録
-        genres = ['バトル', 'ファンタジー', 'ラブコメ', '日常', 'サスペンス']
+        genres = ['バトル', 'ファンタジー', 'ラブコメ', '日常', 'サスペンス','SF','ミステリー',]
         for g in genres:
             cursor.execute("INSERT INTO genres (name) VALUES (%s)", (g,))
 
