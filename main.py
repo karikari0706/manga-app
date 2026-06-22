@@ -6,10 +6,11 @@ app = FastAPI()
 
 def get_db_connection():
     return pymysql.connect(
-        host='localhost',
-        user='app_user',
-        password='app_password',
-        database='manga_db',
+        host='gateway01.ap-northeast-1.prod.aws.tidbcloud.com',
+        user='2b26cwtACNaoCtX.root',
+        password='WFdsCr8Hew5tJh7z',
+        database='test',
+        ssl={'ssl': {}}, # 👈 クラウドDBへの安全な通信に必要です
         cursorclass=pymysql.cursors.DictCursor
     )
 
